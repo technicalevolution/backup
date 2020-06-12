@@ -1,6 +1,6 @@
 #!/bin/sh
 TMPDIR="/tmp/$(mktemp -u -d backups.$USER.XXXXXX)" && mkdir -p $TMPDIR
-BUCKET="techevo-backups/$HOSTNAME-backups"
+BUCKET="techevo-backups"
 INVOCATION_ID=$(systemd-id128 new)
 TIMESTAMP=$(date -u +%s)
 
@@ -23,11 +23,11 @@ _log "Starting backup."
 trap _cleanup SIGINT
 
 _log "Creating archive: $USER-$HOSTNAME-$TIMESTAMP.tar.gz"
-tar -zcf "$TMPDIR/$USER-$HOSTNAME-$TIMESTAMP.tar.gz" "$HOME/Documents/" "$HOME/.vim" 2>/dev/null
+tar -zcf "$TMPDIR/$USER-$HOSTNAME-$TIMESTAMP.tar.gz" "$HOME/.vim" 2>/dev/null
 
 if [ $? -eq 0 ]; then
   printf "Success\n"
-  aws s3 cp "$TMPDIR/$USER-$HOSTNAME-$TIMESTAMP.tar.gz" s3://techevo-backups/
+  aws s3 cp "$TMPDIR/$USER-$HOSTNAME-$TIMESTAMP.tar.gz" "s3://$BUCKET"
 else
   _log "Unable to create archive locally.\n"
   _cleanup
